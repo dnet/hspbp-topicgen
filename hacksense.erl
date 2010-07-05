@@ -39,3 +39,15 @@ state_to_list(#hackstate{timestamp = Timestamp, state = State}) ->
 		0 -> "CLOSED";
 		_ -> "OPEN"
 	end ++ " since " ++ Timestamp.
+
+% send a {hacksense, State} message if the state of HackSense has changed
+send_if_newer() -> send_if_newer(?BASEURL).
+send_if_newer(BaseUrl) -> send_if_newer(BaseUrl, invalid).
+send_if_newer(BaseUrl, Last) -> send_if_newer(BaseUrl, Last, self()).
+send_if_newer(BaseUrl, Last, Pid) ->
+	spawn(fun() ->
+		case state(BaseUrl) of
+			Last -> ok;
+			New -> Pid ! {hacksense, New}
+		end
+	end).
