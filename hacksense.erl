@@ -20,11 +20,12 @@
 
 -module(hacksense).
 -compile(export_all).
+-define(BASEURL, "http://vsza.hu/hacksense").
 
 -include("hacksense.hrl").
 
 % get hacksense state in a hackstate record
-state() -> state("http://vsza.hu/hacksense").
+state() -> state(?BASEURL).
 state(BaseUrl) ->
 	{ok, {_, _, CSV}} = httpc:request(BaseUrl ++ "/status.csv"),
 	[GUID, Timestamp, State | _] = string:tokens(
