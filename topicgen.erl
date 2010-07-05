@@ -23,14 +23,13 @@
 
 % check HackSense every Interval ms, change topic if necessary, quit @ quit msg
 ircproc(Interval, Pid, HSURL, HSState) ->
-	ircproc(Interval, Pid, HSURL, HSState, false).
-ircproc(Interval, Pid, HSURL, HSState, Update) ->
 	hacksense:send_if_newer(HSURL, HSState),
-	case Update of
-		true -> Pid ! {topic,
-			"http://hspbp.org || " ++ hacksense:state_to_list(HSState)};
-		false -> ok
-	end,
+	ircproc(Interval, Pid, HSURL, HSState, false).
+ircproc(Interval, Pid, HSURL, HSState, true) ->
+	Pid ! {topic,
+		"http://hspbp.org || " ++ hacksense:state_to_list(HSState)},
+	ircproc(Interval, Pid, HSURL, HSState, false);
+ircproc(Interval, Pid, HSURL, HSState, false) ->
 	receive
 		{hacksense, NewHSState} ->
 			ircproc(Interval, Pid, HSURL, NewHSState, true);
