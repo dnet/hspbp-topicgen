@@ -38,7 +38,7 @@ state_to_list(#hackstate{timestamp = Timestamp, state = State}) ->
 	case State of
 		0 -> "CLOSED";
 		_ -> "OPEN"
-	end ++ " since " ++ Timestamp.
+	end ++ " since " ++ string:left(Timestamp, 16).
 
 % send a {hacksense, State} message if the state of HackSense has changed
 send_if_newer() -> send_if_newer(?BASEURL).
