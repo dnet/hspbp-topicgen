@@ -23,6 +23,7 @@
 
 -include("hacksense.hrl").
 
+% get hacksense state in a hackstate record
 state() -> state("http://vsza.hu/hacksense").
 state(BaseUrl) ->
 	{ok, {_, _, CSV}} = httpc:request(BaseUrl ++ "/status.csv"),
@@ -31,6 +32,7 @@ state(BaseUrl) ->
 	#hackstate{
 		guid = GUID, timestamp = Timestamp, state = list_to_integer(State)}.
 
+% convert a hackstate record into a string
 state_to_list(#hackstate{timestamp = Timestamp, state = State}) ->
 	case State of
 		0 -> "CLOSED";
