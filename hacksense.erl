@@ -27,7 +27,8 @@
 % get hacksense state in a hackstate record
 state() -> state(?BASEURL).
 state(BaseUrl) ->
-	{ok, {_, _, CSV}} = httpc:request(BaseUrl ++ "/status.csv"),
+	{ok, {_, _, CSV}} = httpc:request(get,
+		{BaseUrl ++ "/status.csv", [{"User-Agent", "hspbp-topicgen"}]}, [], []),
 	[GUID, Timestamp, State | _] = string:tokens(
 		string:strip(CSV, right, $\n), ";"),
 	#hackstate{
