@@ -21,23 +21,30 @@
 -module(topicgen).
 -compile(export_all).
 
-% check HackSense every Interval ms, change topic if necessary, quit @ quit msg
-ircproc(Interval, Pid, HSURL, HSState) ->
+% check HackSense and events every Interval ms, change topic if necessary,
+% quit @ quit msg
+ircproc(Interval, Pid, HSURL, HSState, EState) ->
 	hacksense:send_if_newer(HSURL, HSState),
-	ircproc(Interval, Pid, HSURL, HSState, false).
-ircproc(Interval, Pid, HSURL, HSState, true) ->
-	Pid ! {topic,
-		"http://hspbp.org || " ++ hacksense:state_to_list(HSState)},
-	ircproc(Interval, Pid, HSURL, HSState, false);
-ircproc(Interval, Pid, HSURL, HSState, false) ->
+	event:send_if_newer(EState),
+	ircproc(Interval, Pid, HSURL, HSState, EState, false).
+ircproc(Interval, Pid, HSURL, HSState, EState, true) ->
+	if HSState =/= invalid andalso EState =/= invalid ->
+		Pid ! {topic, "http://hspbp.org || " ++ hacksense:state_to_list(HSState)
+			++ ", next: " ++ EState};
+		true -> ok
+	end,
+	ircproc(Interval, Pid, HSURL, HSState, EState, false);
+ircproc(Interval, Pid, HSURL, HSState, EState, false) ->
 	receive
 		{hacksense, NewHSState} ->
-			ircproc(Interval, Pid, HSURL, NewHSState, true);
+			ircproc(Interval, Pid, HSURL, NewHSState, EState, true);
+		{event, NewEState} ->
+			ircproc(Interval, Pid, HSURL, HSState, NewEState, true);
 		quit -> quit
-		after Interval -> ircproc(Interval, Pid, HSURL, HSState)
+		after Interval -> ircproc(Interval, Pid, HSURL, HSState, EState)
 	end.
 
 % entry point for dnet's fork of erlang-ircbot
 ircmain(Bot, HSURL) -> ircmain(Bot, HSURL, 90000).
 ircmain(Bot, HSURL, Interval) ->
-	spawn(?MODULE, ircproc, [Interval, Bot, HSURL, invalid]).
+	spawn(?MODULE, ircproc, [Interval, Bot, HSURL, invalid, invalid]).
