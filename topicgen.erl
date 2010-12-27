@@ -40,6 +40,10 @@ ircproc(Interval, Pid, HSURL, HSState, EState, false) ->
 			ircproc(Interval, Pid, HSURL, NewHSState, EState, true);
 		{event, NewEState} ->
 			ircproc(Interval, Pid, HSURL, HSState, NewEState, true);
+		{ident, IdentPid} ->
+			IdentPid ! {ident, "topicgen (polling " ++ HSURL ++
+				" and event.py every " ++ integer_to_list(Interval) ++ " msec)"},
+			ircproc(Interval, Pid, HSURL, HSState, EState, false);
 		quit -> quit
 		after Interval -> ircproc(Interval, Pid, HSURL, HSState, EState)
 	end.
