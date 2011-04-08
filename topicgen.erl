@@ -29,7 +29,7 @@ ircproc(Interval, Pid, HSURL, HSState, EState) ->
 	ircproc(Interval, Pid, HSURL, HSState, EState, false).
 ircproc(Interval, Pid, HSURL, HSState, EState, true) ->
 	if HSState =/= invalid andalso EState =/= invalid ->
-		Pid ! {topic, "http://hspbp.org || " ++ hacksense:state_to_list(HSState)
+		Pid ! {topic, "http://hsbp.org || " ++ hacksense:state_to_list(HSState)
 			++ ", next: " ++ EState};
 		true -> ok
 	end,
