@@ -34,7 +34,7 @@ def strip_accents(s):
    return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
 
 try:
-	req = urllib2.Request("http://hspbp.org/")
+	req = urllib2.Request("http://hsbp.org/HomePage")
 	response = urllib2.urlopen(req)
 	soup = BeautifulSoup(response.read())
 	event = soup.find(attrs={'class': re.compile(r'\bvevent\b')})
