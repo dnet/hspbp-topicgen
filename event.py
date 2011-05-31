@@ -24,25 +24,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-from BeautifulSoup import BeautifulSoup
-import urllib2
-import re
-import unicodedata
+from lxml import html
+from urllib2 import urlopen
+from datetime import datetime
 import sys
 
-def strip_accents(s):
-   return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
-
 try:
-	req = urllib2.Request("http://hsbp.org/HomePage")
-	response = urllib2.urlopen(req)
-	soup = BeautifulSoup(response.read())
-	event = soup.find(attrs={'class': re.compile(r'\bvevent\b')})
-
-	start = event.find(attrs={'class': re.compile(r'\bdtstart\b')})
-	summary = event.find(attrs={'class': re.compile(r'\bsummary\b')})
-	title = start['title']
-	sum = strip_accents(unicode(summary.string).strip())
-	sys.stdout.write(title[0:10] + ' ' + title[11:16] + ' ' + sum)
+	events = html.parse('http://hsbp.org/tiki-calendar.php?viewlist=list').getroot()
+	start = datetime.fromtimestamp(int(filter(str.isdigit,
+		events.find_class('dtstart')[0][0].get('href')))).strftime('%Y-%m-%d %H:%M')
+	summary = events.find_class('summary')[0].text
+	sys.stdout.write('%s %s' % (start, summary.encode('utf-8')))
 except:
 	pass
