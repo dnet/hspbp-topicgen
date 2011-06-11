@@ -26,11 +26,13 @@
 
 % get hacksense state in a hackstate record
 state() -> state(?BASEURL).
-state(BaseUrl) -> state(BaseUrl, #hackstate{guid = ""}).
+state(BaseUrl) -> state(BaseUrl, invalid).
 state(BaseUrl, Last) ->
 	{ok, {{_, Status, _}, _, CSV}} = httpc:request(get,
 		{BaseUrl ++ "/status.csv", [{"User-Agent", "hspbp-topicgen"},
-			{"If-None-Match", Last#hackstate.guid}]}, [], []),
+			{"If-None-Match",
+				case Last of invalid -> ""; _ -> Last#hackstate.guid end}
+		]}, [], []),
 	case Status of
 		304 -> Last;
 		_ ->
