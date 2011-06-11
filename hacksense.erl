@@ -26,13 +26,19 @@
 
 % get hacksense state in a hackstate record
 state() -> state(?BASEURL).
-state(BaseUrl) ->
-	{ok, {_, _, CSV}} = httpc:request(get,
-		{BaseUrl ++ "/status.csv", [{"User-Agent", "hspbp-topicgen"}]}, [], []),
-	[GUID, Timestamp, State | _] = string:tokens(
-		string:strip(CSV, right, $\n), ";"),
-	#hackstate{
-		guid = GUID, timestamp = Timestamp, state = list_to_integer(State)}.
+state(BaseUrl) -> state(BaseUrl, #hackstate{guid = ""}).
+state(BaseUrl, Last) ->
+	{ok, {{_, Status, _}, _, CSV}} = httpc:request(get,
+		{BaseUrl ++ "/status.csv", [{"User-Agent", "hspbp-topicgen"},
+			{"If-None-Match", Last#hackstate.guid}]}, [], []),
+	case Status of
+		304 -> Last;
+		_ ->
+			[GUID, Timestamp, State | _] = string:tokens(
+				string:strip(CSV, right, $\n), ";"),
+			#hackstate{
+				guid = GUID, timestamp = Timestamp, state = list_to_integer(State)}
+	end.
 
 % convert a hackstate record into a string
 state_to_list(#hackstate{timestamp = Timestamp, state = State}) ->
@@ -47,7 +53,7 @@ send_if_newer(BaseUrl) -> send_if_newer(BaseUrl, invalid).
 send_if_newer(BaseUrl, Last) -> send_if_newer(BaseUrl, Last, self()).
 send_if_newer(BaseUrl, Last, Pid) ->
 	spawn(fun() ->
-		case state(BaseUrl) of
+		case state(BaseUrl, Last) of
 			Last -> ok;
 			New -> Pid ! {hacksense, New}
 		end
