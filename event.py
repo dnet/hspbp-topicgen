@@ -25,7 +25,6 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 from lxml import html
-from urllib2 import urlopen
 from datetime import datetime
 import sys
 
