@@ -26,9 +26,12 @@
 
 from lxml import html
 from datetime import datetime
-import sys
+import sys, requests
 
 try:
+	spaceapi = requests.get('http://vsza.hu/hacksense/spaceapi_status.json')
+	sensor = spaceapi.json()['sensors']['humidity'][0]
+	sys.stdout.write('[water: {s[value]}{s[unit]}] '.format(s=sensor).replace('.0%', '%'))
 	events = html.parse('http://hsbp.org/tiki-calendar.php?viewlist=list').getroot()
 	start = datetime.fromtimestamp(int(filter(str.isdigit,
 		events.find_class('dtstart')[0][0].get('href')))).strftime('%Y-%m-%d %H:%M')
